@@ -481,7 +481,11 @@ func CreateServer(api *ScalewayAPI, c *ConfigCreateServer) (string, error) {
 
 	// For inherited volumes, we prefix the name with server hostname
 	if inheritingVolume {
-		createdServer, err := api.GetServer(serverID)
+		// Server creation may take some time. So make a couple of attempts before failing.
+		var createdServer *ScalewayServer = nil
+		for errCount := 0; createdServer == nil && errCount < 3; errCount++ {
+			createdServer, err = api.GetServer(serverID)
+		}
 		if err != nil {
 			return "", err
 		}
